@@ -163,7 +163,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bootstrap-sass
+  bootstrap-sass (~> 3.3.6)
   byebug
   coffee-rails (~> 4.2)
   jbuilder (~> 2.5)
