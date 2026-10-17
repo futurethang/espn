@@ -8,6 +8,7 @@ extends Node
 ##
 ##   godot -- --capture out.png [--scene res://scenes/x/x.tscn]
 ##                               [--input right,right,down] [--settle 0.3]
+##                               [--shot-delay 0.05]
 ##
 ## --input presses movement actions in order before the shot, which is how
 ## behaviour that only exists in response to input can be verified without a
@@ -22,6 +23,11 @@ var _scene_path: String = ""
 ## frame count that looks generous can be a couple of milliseconds and catch
 ## every tween mid-flight.
 var _settle: float = 0.3
+
+## How long to wait after the last action before shooting. Separate from
+## _settle so a short-lived animation — a bump lasts about a sixth of a
+## second — can be caught mid-flight without rushing the steps before it.
+var _shot_delay: float = -1.0
 
 var _input_actions: PackedStringArray = []
 
@@ -47,8 +53,10 @@ func _run() -> void:
 	await get_tree().process_frame
 	await _play_input()
 
-	# Let the last action's animation finish.
-	await get_tree().create_timer(_settle).timeout
+	# Let the last action's animation play for as long as asked.
+	var delay: float = _shot_delay if _shot_delay >= 0.0 else _settle
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
 
 	# Camera smoothing eases toward its target and never quite arrives, so a
 	# shot taken mid-ease frames the wrong part of the world. Snap it.
@@ -112,6 +120,8 @@ func _parse_args() -> void:
 				_scene_path = args[i + 1]
 			"--settle":
 				_settle = float(args[i + 1])
+			"--shot-delay":
+				_shot_delay = float(args[i + 1])
 			"--input":
 				for name in args[i + 1].split(",", false):
 					_input_actions.append("move_" + name.strip_edges())

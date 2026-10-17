@@ -23,6 +23,11 @@ func _initialize() -> void:
 		if script == null:
 			_failures.append("%s — failed to load" % path)
 			continue
+		if not script.can_instantiate():
+			# A script that failed to parse still loads as a GDScript, so
+			# calling new() on it just produces a confusing second error.
+			_failures.append("%s — does not compile (see the parse errors above)" % path)
+			continue
 		var suite: Object = script.new()
 		if suite.has_method("before_all"):
 			suite.call("before_all")

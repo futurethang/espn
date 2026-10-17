@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="InteractableData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/interactable_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Berry bush"
+message = "Sunberries!"
+blocks_movement = true
+one_shot = true
+spent_message = "Picked clean."
+atlas_coords = Vector2i(2, 3)
+spent_atlas_coords = Vector2i(3, 3)

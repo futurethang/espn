@@ -333,12 +333,81 @@ def tuft(p) -> Image.Image:
     ], {'G': 'grass_light', 'D': 'grass_dark'})
 
 
+
+
+def sign_post(p) -> Image.Image:
+    """A sign. Blocks, and says something when you walk into it."""
+    return _from_rows(p, [
+        "................",
+        "................",
+        "...EEEEEEEEEE...",
+        "...EIIIIIIIIE...",
+        "...EILLLLLLIE...",
+        "...EILLLLLLIE...",
+        "...EILLLLLLIE...",
+        "...EIIIIIIIIE...",
+        "...EEEEEEEEEE...",
+        ".......EE.......",
+        ".......EE.......",
+        ".......EE.......",
+        "......DDDD......",
+        "................",
+        "................",
+        "................",
+    ], {'E': 'earth', 'I': 'ink', 'L': 'light', 'D': 'grass_dark'})
+
+
+def berry_bush(p) -> Image.Image:
+    """A berry bush, fruit showing. One-shot: pick it and it turns bare."""
+    return _from_rows(p, [
+        "................",
+        "................",
+        "......DDD.......",
+        ".....DGGGD......",
+        "....DGGHGGD.....",
+        "...DGHGGGHGD....",
+        "...DGGGGGGGD....",
+        "...DGHGGGHGD....",
+        "....DGGGGGD.....",
+        ".....DGGGD......",
+        "......DDD.......",
+        ".......E........",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'D': 'grass_dark', 'G': 'grass', 'H': 'hero'})
+
+
+def berry_bush_picked(p) -> Image.Image:
+    """The same bush, picked bare."""
+    return _from_rows(p, [
+        "................",
+        "................",
+        "......DDD.......",
+        ".....DGGGD......",
+        "....DGGGGGD.....",
+        "...DGGGGGGGD....",
+        "...DGGGGGGGD....",
+        "...DGGGGGGGD....",
+        "....DGGGGGD.....",
+        ".....DGGGD......",
+        "......DDD.......",
+        ".......E........",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'D': 'grass_dark', 'G': 'grass_dark', 'E': 'earth'})
+
+
 def build_atlas(p) -> Image.Image:
     """Lay every tile into one atlas, grouped by role.
 
     Row 0   ground    grass x4, path x2, dirt, water
     Row 1   decor     flowers, pebbles, mushroom, tuft
     Rows 2-3 blockers tree (one column, two rows tall), rock, stump, fence
+    Row 3   props     sign, berry bush, picked bush (drawn by Prop, not tiles)
 
     The TileSet resource reads coordinates out of this grid, so the order is
     load-bearing. Stage 6 turns these rows into named tile roles.
@@ -355,6 +424,10 @@ def build_atlas(p) -> Image.Image:
     atlas.paste(tree(p), (0, TILE * 2))
     for i, tile in enumerate([rock(p), stump(p), fence(p)]):
         atlas.paste(tile, ((i + 1) * TILE, TILE * 2))
+
+    # Row 3 column 0 is the tree's lower half, so props start at column 1.
+    for i, tile in enumerate([sign_post(p), berry_bush(p), berry_bush_picked(p)]):
+        atlas.paste(tile, ((i + 1) * TILE, TILE * 3))
 
     return atlas
 

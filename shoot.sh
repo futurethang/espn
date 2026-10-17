@@ -4,6 +4,7 @@
 #   ./shoot.sh                                   # main scene -> shots/main.png
 #   ./shoot.sh scenes/player/player.tscn out.png
 #   INPUT=right,right,down ./shoot.sh  # walk first, then shoot
+#   INPUT=down SHOT_DELAY=0.05 ./shoot.sh  # catch a short animation mid-flight
 #
 # Runs the real game under Godot's Compatibility (OpenGL) renderer against
 # Mesa's software rasteriser inside a virtual X server. The capture happens
@@ -30,6 +31,9 @@ ABS_OUT="$(cd "$(dirname "$OUT")" && pwd)/$(basename "$OUT")"
 ARGS=(--capture "$ABS_OUT" --settle "$SETTLE")
 if [ -n "${INPUT:-}" ]; then
   ARGS+=(--input "$INPUT")
+fi
+if [ -n "${SHOT_DELAY:-}" ]; then
+  ARGS+=(--shot-delay "$SHOT_DELAY")
 fi
 if [ -n "$SCENE" ]; then
   case "$SCENE" in res://*) ;; *) SCENE="res://$SCENE" ;; esac

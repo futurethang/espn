@@ -34,6 +34,15 @@ Tests live in `tests/unit/test_*.gd` and extend `TestBase`. Test the things
 that are invisible by eye: grid math, seeded determinism, recipe matching,
 generation validity. Do not write tests that assert on how something looks.
 
+## Composability
+
+`docs/composability.md` describes the seams. The rule behind all of them:
+code that decides something never touches a Sprite2D, and code that draws
+never decides anything. Before adding a system, check whether it belongs
+behind an existing seam — a new reason the hero cannot enter a tile is a
+MovementRules rule, and a new kind of object is an InteractableData resource,
+not a new script.
+
 ## Art pipeline
 
 Final art comes from Adobe Firefly Graph, exported as PNG atlases plus a

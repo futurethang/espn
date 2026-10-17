@@ -1,8 +1,12 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
 [ext_resource type="TileSet" path="res://data/tilesets/home.tres" id="2_tileset"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/prop/prop.tscn" id="3_prop"]
+[ext_resource type="Resource" path="res://data/interactables/sign.tres" id="4_sign"]
+[ext_resource type="Resource" path="res://data/interactables/berry_bush.tres" id="5_bush"]
+[ext_resource type="Resource" path="res://data/interactables/standing_stone.tres" id="6_stone"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="7_player"]
 
 [node name="Main" type="Node2D"]
 y_sort_enabled = true
@@ -21,5 +25,24 @@ y_sort_enabled = true
 tile_map_data = PackedByteArray("AAAEAAUAAAABAAIAAAAEABEAAAAAAAIAAAAMABIAAAAAAAIAAAANAA0AAAAAAAIAAAARAAQAAAAAAAIAAAARAA4AAAAAAAIAAAASAAMAAAAAAAIAAAASAAwAAAAAAAIAAAATABIAAAAAAAIAAAAUAA0AAAAAAAIAAAAUABIAAAAAAAIAAAAVAAwAAAAAAAIAAAAVAA0AAAAAAAIAAAAYAAoAAAABAAIAAAAYABEAAAADAAIAAAAZABEAAAADAAIAAAAaABEAAAADAAIAAAAaABYAAAABAAIAAAAbABEAAAADAAIAAAAcABEAAAADAAIAAAAdABEAAAADAAIAAAAgAAcAAAACAAIAAAAgABcAAAAAAAIAAAAgABwAAAAAAAIAAAAiABkAAAAAAAIAAAAiABwAAAACAAIAAAAjAA0AAAABAAIAAAAjABsAAAAAAAIAAAAjABwAAAAAAAIAAAAkAAMAAAABAAIAAAAkAAUAAAAAAAIAAAAkAAYAAAAAAAIAAAAkAA4AAAAAAAIAAAAkABAAAAAAAAIAAAAlAAQAAAAAAAIAAAAlABAAAAAAAAIAAAAlABwAAAACAAIAAAAmAAUAAAAAAAIAAAAmAAYAAAACAAIAAAAmABIAAAAAAAIAAAA=")
 tile_set = ExtResource("2_tileset")
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
+[node name="Props" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Sign" parent="Props" instance=ExtResource("3_prop")]
+tile = Vector2i(18, 21)
+data = ExtResource("4_sign")
+
+[node name="BerryBush" parent="Props" instance=ExtResource("3_prop")]
+tile = Vector2i(22, 19)
+data = ExtResource("5_bush")
+
+[node name="BerryBush2" parent="Props" instance=ExtResource("3_prop")]
+tile = Vector2i(23, 22)
+data = ExtResource("5_bush")
+
+[node name="Stone" parent="Props" instance=ExtResource("3_prop")]
+tile = Vector2i(17, 19)
+data = ExtResource("6_stone")
+
+[node name="Player" parent="." instance=ExtResource("7_player")]
 start_tile = Vector2i(20, 20)

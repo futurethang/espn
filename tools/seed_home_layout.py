@@ -77,6 +77,8 @@ def build() -> tuple[dict, dict, dict]:
                     return False
         if abs(x - 20) <= 1 and abs(y - 20) <= 1:
             return False
+        if (x, y) in {(18, 21), (22, 19), (23, 22), (17, 19)}:
+            return False
         return (x, y) not in obstacles
 
     # Trees in loose clumps — things in nature appear in groups, and scattered
@@ -118,11 +120,31 @@ def build() -> tuple[dict, dict, dict]:
 
 def main() -> None:
     ground, obstacles, decor = build()
-    scene = f'''[gd_scene load_steps=4 format=3]
+    # Props sit beside the hero's start so there is always something to walk
+    # into. Placement is deliberate, not seeded — these are landmarks.
+    props = [
+        ("Sign", "4_sign", (18, 21)),
+        ("BerryBush", "5_bush", (22, 19)),
+        ("BerryBush2", "5_bush", (23, 22)),
+        ("Stone", "6_stone", (17, 19)),
+    ]
+    prop_nodes = "\n".join(
+        f'''[node name="{name}" parent="Props" instance=ExtResource("3_prop")]
+tile = Vector2i({tx}, {ty})
+data = ExtResource("{res}")
+'''
+        for name, res, (tx, ty) in props
+    )
+
+    scene = f'''[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
 [ext_resource type="TileSet" path="res://data/tilesets/home.tres" id="2_tileset"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/prop/prop.tscn" id="3_prop"]
+[ext_resource type="Resource" path="res://data/interactables/sign.tres" id="4_sign"]
+[ext_resource type="Resource" path="res://data/interactables/berry_bush.tres" id="5_bush"]
+[ext_resource type="Resource" path="res://data/interactables/standing_stone.tres" id="6_stone"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="7_player"]
 
 [node name="Main" type="Node2D"]
 y_sort_enabled = true
@@ -141,7 +163,11 @@ y_sort_enabled = true
 tile_map_data = {pack(obstacles)}
 tile_set = ExtResource("2_tileset")
 
-[node name="Player" parent="." instance=ExtResource("3_player")]
+[node name="Props" type="Node2D" parent="."]
+y_sort_enabled = true
+
+{prop_nodes}
+[node name="Player" parent="." instance=ExtResource("7_player")]
 start_tile = Vector2i(20, 20)
 '''
     (ROOT / "scenes" / "main" / "main.tscn").write_text(scene)

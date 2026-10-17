@@ -22,6 +22,7 @@ Open `project.godot` in Godot 4.7 and press Play.
 ./shoot.sh                              # main scene -> shots/main.png
 ./shoot.sh scenes/x/x.tscn shots/x.png  # any scene
 INPUT=right,right,down ./shoot.sh       # walk the hero first, then shoot
+INPUT=down SHOT_DELAY=0.05 ./shoot.sh   # catch a short animation mid-flight
 ```
 
 `check.sh` imports headlessly, which surfaces GDScript parse errors, broken
@@ -62,6 +63,8 @@ docs/      the course this project follows
 
 [`AGENTS.md`](AGENTS.md) holds the rules every AI session on this project
 follows. Point each new session at it.
+[`docs/composability.md`](docs/composability.md) describes the seams that keep
+placeholder assets swappable — read it before adding a system.
 
 ## Progress
 
@@ -70,4 +73,6 @@ follows. Point each new session at it.
 - [~] **Stage 2** — Paint the home — tileset, layers, walkable data and
   y-sorting are in; terrain autotiling and the actual composition of home
   (cottage, garden) are editor work
-- [ ] **Stage 3** — Things that do things
+- [~] **Stage 3** — Things that do things — props, interaction and bump
+  feedback are in; items, inventory and brewing are not
+- [ ] **Stage 4** — Turns, inventory and brewing

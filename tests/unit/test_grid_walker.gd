@@ -106,3 +106,98 @@ func test_step_started_reports_both_tiles() -> void:
 	expect_eq(seen.size(), 1, "one step reported")
 	expect_eq(seen[0][0], Vector2i(5, 5), "from tile")
 	expect_eq(seen[0][1], Vector2i(4, 5), "to tile")
+
+
+func test_bump_reports_the_tile_we_could_not_enter() -> void:
+	var walker := GridWalker.new(Vector2i(0, 0))
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	var seen: Array = []
+	walker.bumped.connect(func(from: Vector2i, into: Vector2i) -> void:
+		seen.append([from, into]))
+
+	walker.request(RIGHT)
+	expect_eq(seen.size(), 1, "one bump reported")
+	expect_eq(seen[0][0], Vector2i(0, 0), "bumped from here")
+	expect_eq(seen[0][1], Vector2i(1, 0), "into the blocked tile")
+
+
+func test_holding_against_a_wall_bumps_once() -> void:
+	# Held input re-requests every frame. Without the latch a sign would
+	# repeat its message continuously and a one-shot prop would be spent and
+	# re-reported in the same press.
+	var walker := GridWalker.new(Vector2i(0, 0))
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	# Counted into an Array on purpose: a lambda captures a local int by
+	# value, so `bumps += 1` inside one would increment a copy.
+	var bumps: Array = []
+	walker.bumped.connect(func(_f: Vector2i, _i: Vector2i) -> void: bumps.append(1))
+
+	for i in 20:
+		walker.request(RIGHT)
+	expect_eq(bumps.size(), 1, "twenty frames of held input, one bump")
+
+
+func test_release_re_arms_the_bump() -> void:
+	var walker := GridWalker.new(Vector2i(0, 0))
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	# Counted into an Array on purpose: a lambda captures a local int by
+	# value, so `bumps += 1` inside one would increment a copy.
+	var bumps: Array = []
+	walker.bumped.connect(func(_f: Vector2i, _i: Vector2i) -> void: bumps.append(1))
+
+	walker.request(RIGHT)
+	walker.release()
+	walker.request(RIGHT)
+	expect_eq(bumps.size(), 2, "letting go and pressing again is a fresh attempt")
+
+
+func test_turning_away_re_arms_the_bump() -> void:
+	var walker := GridWalker.new(Vector2i(0, 0))
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	# Counted into an Array on purpose: a lambda captures a local int by
+	# value, so `bumps += 1` inside one would increment a copy.
+	var bumps: Array = []
+	walker.bumped.connect(func(_f: Vector2i, _i: Vector2i) -> void: bumps.append(1))
+
+	walker.request(RIGHT)
+	walker.request(RIGHT)
+	walker.request(DOWN)
+	walker.request(RIGHT)
+	expect_eq(bumps.size(), 3, "each change of direction is a new attempt")
+
+
+func test_a_successful_step_clears_the_latch() -> void:
+	var open_tiles := {Vector2i(1, 0): true}
+	var walker := GridWalker.new(Vector2i(0, 0))
+	walker.can_enter = func(t: Vector2i) -> bool: return open_tiles.has(t)
+	# Counted into an Array on purpose: a lambda captures a local int by
+	# value, so `bumps += 1` inside one would increment a copy.
+	var bumps: Array = []
+	walker.bumped.connect(func(_f: Vector2i, _i: Vector2i) -> void: bumps.append(1))
+
+	walker.request(DOWN)          # blocked, latches DOWN
+	walker.request(RIGHT)         # steps to (1,0)
+	walker.finish_step()
+	walker.request(DOWN)          # blocked again, but from a new tile
+	expect_eq(bumps.size(), 2, "walking somewhere makes the old block stale")
+
+
+func test_facing_follows_every_attempt() -> void:
+	var walker := GridWalker.new(Vector2i(0, 0))
+	expect_eq(walker.facing, Vector2i(0, 1), "starts facing down")
+
+	walker.request(RIGHT)
+	expect_eq(walker.facing, RIGHT, "faces where it moved")
+	walker.finish_step()
+
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	walker.request(UP)
+	expect_eq(walker.facing, UP, "faces a wall it walked into")
+
+
+func test_facing_tile_is_the_one_in_front() -> void:
+	var walker := GridWalker.new(Vector2i(5, 5))
+	walker.can_enter = func(_t: Vector2i) -> bool: return false
+	walker.request(LEFT)
+	expect_eq(walker.tile, Vector2i(5, 5), "blocked, so still here")
+	expect_eq(walker.facing_tile(), Vector2i(4, 5), "the tile an interact press acts on")
