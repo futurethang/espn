@@ -21,10 +21,14 @@ GODOT="${GODOT:-godot}"
 OUT="build/web"
 
 mkdir -p "$OUT"
+# Keep Godot from indexing its own output: without this it imports the
+# exported PNGs on the next scan and litters the folder with .import files.
+touch build/.gdignore
 "$GODOT" --headless --export-release "Web" "$OUT/index.html"
 
 # Stops GitHub Pages running the output through Jekyll, which would drop any
 # file or folder beginning with an underscore.
 touch "$OUT/.nojekyll"
+rm -f "$OUT"/*.import
 
 echo "built $OUT ($(du -sh "$OUT" | cut -f1))"

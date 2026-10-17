@@ -18,16 +18,23 @@ ROOT="$(pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+SOURCE_REV="$(git rev-parse --short HEAD)"
+
 git worktree add --detach "$WORK" >/dev/null
 (
+  set -e
   cd "$WORK"
-  git checkout --orphan gh-pages >/dev/null 2>&1
+  # A fresh throwaway branch name each time: `--orphan gh-pages` fails if a
+  # local gh-pages already exists, which it does from the second run on.
+  git checkout --orphan "deploy-$$" >/dev/null 2>&1
   git rm -rqf . >/dev/null 2>&1 || true
   cp -r "$ROOT/build/web/." .
   touch .nojekyll
+  rm -f ./*.import
   git add -A
-  git commit -q -m "Deploy web build from $(git -C "$ROOT" rev-parse --short HEAD)"
-  git push -f -u origin gh-pages 2>&1 | tail -2
+  git commit -q -m "Deploy web build from $SOURCE_REV"
+  git push -f origin "HEAD:gh-pages"
 )
 git worktree remove --force "$WORK"
-echo "pushed gh-pages"
+git worktree prune
+echo "pushed gh-pages (from $SOURCE_REV)"
