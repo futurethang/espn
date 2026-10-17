@@ -40,15 +40,61 @@ def draw(size: int, pixels: dict[tuple[int, int], tuple[int, int, int, int]],
     return img
 
 
-def ground_tile(p) -> Image.Image:
-    """Grass with a scatter of lighter blades. Tiles seamlessly by construction:
-    every speckle sits at least one pixel inside the edge."""
+# The tileset atlas, one row per tile role. Keeping roles in rows rather than
+# scattered is what lets Stage 6 describe a biome as "ground is row 0" instead
+# of listing coordinates.
+#
+# Row 0  ground   grass x4, path x2, dirt, water-ish
+# Row 1  blocker  tree, rock, stump, fence
+# Row 2  decor    flowers, pebbles, mushroom, tuft
+ATLAS_COLUMNS = 8
+ATLAS_ROWS = 4
+
+
+def _speckled(p, base: str, fleck: str, seed: int, count: int) -> dict:
+    """Scatter `count` flecks deterministically. Pseudo-random from `seed`
+    rather than random.random() so re-running the script is a no-op in git."""
     px = {}
-    speckles = [(3, 4), (9, 2), (13, 6), (5, 11), (11, 13), (2, 9), (7, 7)]
-    for x, y in speckles:
-        px[(x, y)] = p["grass_light"]
-        px[(x, y + 1)] = p["grass_dark"]
-    return draw(TILE, px, background=p["grass"])
+    value = seed * 2654435761 % 2147483647
+    for _ in range(count):
+        value = (value * 1103515245 + 12345) % 2147483648
+        x = 1 + value % (TILE - 2)
+        value = (value * 1103515245 + 12345) % 2147483648
+        y = 1 + value % (TILE - 2)
+        px[(x, y)] = p[fleck]
+    return px
+
+
+def ground_tiles(p) -> list[Image.Image]:
+    """Four grass variants. Variance is what makes movement legible: on a
+    single repeating tile a camera that follows the hero produces a frame that
+    never changes."""
+    out = []
+    for i, (fleck, count) in enumerate(
+        [("grass_light", 5), ("grass_dark", 7), ("grass_light", 2), ("grass_dark", 3)]
+    ):
+        out.append(draw(TILE, _speckled(p, "grass", fleck, i + 1, count), background=p["grass"]))
+    return out
+
+
+def path_tiles(p) -> list[Image.Image]:
+    out = []
+    for i in range(2):
+        out.append(draw(TILE, _speckled(p, "earth", "light", i + 11, 4), background=p["earth"]))
+    return out
+
+
+def dirt_tile(p) -> Image.Image:
+    return draw(TILE, _speckled(p, "grass_dark", "earth", 21, 6), background=p["grass_dark"])
+
+
+def water_tile(p) -> Image.Image:
+    px = {}
+    for x in range(TILE):
+        for y in range(TILE):
+            if (x + y * 3) % 7 == 0:
+                px[(x, y)] = p["light"]
+    return draw(TILE, px, background=p["shadow"])
 
 
 def hero_sprite(p) -> Image.Image:
@@ -81,43 +127,244 @@ def hero_sprite(p) -> Image.Image:
     return draw(TILE, px)
 
 
-def stone(p) -> Image.Image:
-    """A landmark. Uniform ground gives the eye nothing to measure movement
-    against, which makes screenshots useless for judging motion."""
+def _from_rows(p, rows: list[str], key: dict) -> Image.Image:
+    px = {}
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in key:
+                px[(x, y)] = p[key[ch]]
+    return draw(TILE, px)
+
+
+def tree(p) -> Image.Image:
+    """16x32 — two tiles tall. The canopy overhangs the tile above the trunk,
+    which is the whole reason y-sorting exists: walk north of the trunk and
+    the hero should pass behind the leaves."""
     rows = [
         "................",
+        ".....DDDDDD.....",
+        "...DDGGGGGGDD...",
+        "..DGGGGGGGGGGD..",
+        ".DGGGGLLGGGGGGD.",
+        ".DGGGLLLLGGGGGD.",
+        "DGGGGGLLGGGGGGGD",
+        "DGGGGGGGGGGGGGGD",
+        "DGGGGGGGGGGGGGGD",
+        ".DGGGGGGGGGGGGD.",
+        ".DDGGGGGGGGGGDD.",
+        "..DDGGGGGGGGDD..",
+        "....DDGGGGDD....",
+        "......DDDD......",
         "................",
         "................",
+        ".......EE.......",
+        ".......EE.......",
+        "......EEEE......",
+        "......EIIE......",
+        "......EIIE......",
+        "......EIIE......",
+        ".....EEIIEE.....",
+        ".....EE..EE.....",
+        "....EE....EE....",
+        "...DD......DD...",
         "................",
-        ".....EEEE.......",
-        "....EDDDDE......",
-        "...EDDDDDDE.....",
-        "...EDDDDDDE.....",
-        "....EDDDDE......",
-        ".....EEEE.......",
-        "......II........",
         "................",
         "................",
         "................",
         "................",
         "................",
     ]
-    key = {"E": p["earth"], "D": p["light"], "I": p["ink"]}
+    key = {"D": "grass_dark", "G": "grass_light", "L": "light", "E": "earth", "I": "ink"}
     px = {}
     for y, row in enumerate(rows):
         for x, ch in enumerate(row):
             if ch in key:
-                px[(x, y)] = key[ch]
-    return draw(TILE, px)
+                px[(x, y)] = p[key[ch]]
+    img = Image.new("RGBA", (TILE, TILE * 2), (0, 0, 0, 0))
+    for (x, y), colour in px.items():
+        img.putpixel((x, y), colour)
+    return img
+
+
+def rock(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "................",
+        ".....SSSS.......",
+        "....SLLLLS......",
+        "...SLLLLLLS.....",
+        "...SLLLLLLS.....",
+        "....SLLLLS......",
+        ".....SSSS.......",
+        "......II........",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'S': 'shadow', 'L': 'light', 'I': 'ink'})
+
+
+def stump(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "......EEEE......",
+        ".....EDDDDE.....",
+        ".....EDIIDE.....",
+        ".....EDDDDE.....",
+        "......EEEE......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'E': 'ink', 'D': 'earth', 'I': 'shadow'})
+
+
+def fence(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "..E..........E..",
+        "..E..........E..",
+        ".EEEEEEEEEEEEEE.",
+        "..E..........E..",
+        "..E..........E..",
+        ".EEEEEEEEEEEEEE.",
+        "..E..........E..",
+        "..E..........E..",
+        "..I..........I..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'E': 'earth', 'I': 'ink'})
+
+
+def flowers(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "....L......L....",
+        "...LHL....LHL...",
+        "....L..L...L....",
+        "....D.LHL..D....",
+        "....D..L...D....",
+        ".......D........",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'L': 'light', 'H': 'hero', 'D': 'grass_dark'})
+
+
+def pebbles(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "...SS......S....",
+        "...SS.....SS....",
+        "................",
+        "........SS......",
+        "......S.SS......",
+        "......S.........",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'S': 'shadow'})
+
+
+def mushroom(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "................",
+        "......HHH.......",
+        ".....HHLHH......",
+        ".....HHHHH......",
+        "......LLL.......",
+        "......L.L.......",
+        "......LLL.......",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'H': 'hero', 'L': 'light'})
+
+
+def tuft(p) -> Image.Image:
+    return _from_rows(p, [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "...G...G..G.....",
+        "..G.G.G.G.G.G...",
+        "..G.G.G.G.G.G...",
+        "...D...D..D.....",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+    ], {'G': 'grass_light', 'D': 'grass_dark'})
+
+
+def build_atlas(p) -> Image.Image:
+    """Lay every tile into one atlas, grouped by role.
+
+    Row 0   ground    grass x4, path x2, dirt, water
+    Row 1   decor     flowers, pebbles, mushroom, tuft
+    Rows 2-3 blockers tree (one column, two rows tall), rock, stump, fence
+
+    The TileSet resource reads coordinates out of this grid, so the order is
+    load-bearing. Stage 6 turns these rows into named tile roles.
+    """
+    atlas = Image.new("RGBA", (ATLAS_COLUMNS * TILE, ATLAS_ROWS * TILE), (0, 0, 0, 0))
+
+    ground = ground_tiles(p) + path_tiles(p) + [dirt_tile(p), water_tile(p)]
+    for x, tile in enumerate(ground):
+        atlas.paste(tile, (x * TILE, 0))
+
+    for x, tile in enumerate([flowers(p), pebbles(p), mushroom(p), tuft(p)]):
+        atlas.paste(tile, (x * TILE, TILE))
+
+    atlas.paste(tree(p), (0, TILE * 2))
+    for i, tile in enumerate([rock(p), stump(p), fence(p)]):
+        atlas.paste(tile, ((i + 1) * TILE, TILE * 2))
+
+    return atlas
 
 
 def main() -> None:
     p = load_palette()
     OUT.mkdir(parents=True, exist_ok=True)
     art = (
-        ("ground.png", ground_tile(p)),
+        ("tileset.png", build_atlas(p)),
         ("hero.png", hero_sprite(p)),
-        ("stone.png", stone(p)),
     )
     for name, image in art:
         image.save(OUT / name)

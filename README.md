@@ -36,6 +36,18 @@ project trustworthy.
 
 Set `GODOT=/path/to/godot` if the binary is not on your `PATH`.
 
+## Regenerating placeholders
+
+```sh
+python3 tools/make_placeholder_art.py   # atlas + hero from data/palette.json
+python3 tools/make_home_tileset.py      # data/tilesets/home.tres
+python3 tools/seed_home_layout.py       # a first pass at scenes/main/main.tscn
+```
+
+The first two are the pipeline Stage 5 replaces with Firefly Graph exports.
+`seed_home_layout.py` is a bootstrap only — once home is painted in the
+editor, delete it rather than running it over hand-painted work.
+
 ## Layout
 
 ```
@@ -55,4 +67,7 @@ follows. Point each new session at it.
 
 - [x] **Stage 0** — Workshop setup
 - [x] **Stage 1** — A character on the grid
-- [ ] **Stage 2** — Paint the home
+- [~] **Stage 2** — Paint the home — tileset, layers, walkable data and
+  y-sorting are in; terrain autotiling and the actual composition of home
+  (cottage, garden) are editor work
+- [ ] **Stage 3** — Things that do things
