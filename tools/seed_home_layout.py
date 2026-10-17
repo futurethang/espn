@@ -136,7 +136,7 @@ data = ExtResource("{res}")
         for name, res, (tx, ty) in props
     )
 
-    scene = f'''[gd_scene load_steps=8 format=3]
+    scene = f'''[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
 [ext_resource type="TileSet" path="res://data/tilesets/home.tres" id="2_tileset"]
@@ -145,6 +145,7 @@ data = ExtResource("{res}")
 [ext_resource type="Resource" path="res://data/interactables/berry_bush.tres" id="5_bush"]
 [ext_resource type="Resource" path="res://data/interactables/standing_stone.tres" id="6_stone"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="7_player"]
+[ext_resource type="PackedScene" path="res://scenes/touch_controls/touch_controls.tscn" id="8_touch"]
 
 [node name="Main" type="Node2D"]
 y_sort_enabled = true
@@ -169,6 +170,8 @@ y_sort_enabled = true
 {prop_nodes}
 [node name="Player" parent="." instance=ExtResource("7_player")]
 start_tile = Vector2i(20, 20)
+
+[node name="TouchControls" parent="." instance=ExtResource("8_touch")]
 '''
     (ROOT / "scenes" / "main" / "main.tscn").write_text(scene)
     print(f"wrote scenes/main/main.tscn — "

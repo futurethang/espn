@@ -49,6 +49,24 @@ The first two are the pipeline Stage 5 replaces with Firefly Graph exports.
 `seed_home_layout.py` is a bootstrap only — once home is painted in the
 editor, delete it rather than running it over hand-painted work.
 
+## Playing it in a browser
+
+```sh
+tools/export_web.sh    # build/web/
+tools/deploy_web.sh    # force-push it to the gh-pages branch
+```
+
+The export has thread support off on purpose: a threaded Godot web build
+needs SharedArrayBuffer, which needs cross-origin isolation headers, which
+GitHub Pages cannot send. Export templates are a separate download — see the
+comment at the top of `tools/export_web.sh`.
+
+On touch devices an on-screen pad appears (`scenes/touch_controls/`). It is
+an input layer only: it synthesises the same actions a keyboard sends, so
+nothing downstream knows touch exists. Hold the phone landscape — the web
+build scales fractionally to fill the screen, where desktop keeps crisp
+integer scaling.
+
 ## Layout
 
 ```

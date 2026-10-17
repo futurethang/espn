@@ -25,6 +25,11 @@ window/size/window_height_override=810
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
 window/stretch/scale_mode="integer"
+; On a phone, 480x270 with integer scaling cannot scale up at all — a 390px
+; wide viewport gives 1x and the game sits in a small box surrounded by
+; black. Fractional scaling fills the screen at the cost of slightly uneven
+; pixels. Desktop keeps integer, where there is room for a clean 2x or 3x.
+window/stretch/scale_mode.web="fractional"
 
 [rendering]
 
