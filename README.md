@@ -18,16 +18,21 @@ Open `project.godot` in Godot 4.7 and press Play.
 ## Verifying without the editor
 
 ```sh
-./check.sh                  # import the project + run unit tests
-./shoot.sh                  # render the main scene to shots/main.png
-./shoot.sh scenes/x/x.tscn shots/x.png
+./check.sh                              # import the project + run unit tests
+./shoot.sh                              # main scene -> shots/main.png
+./shoot.sh scenes/x/x.tscn shots/x.png  # any scene
+INPUT=right,right,down ./shoot.sh       # walk the hero first, then shoot
 ```
 
 `check.sh` imports headlessly, which surfaces GDScript parse errors, broken
 resource paths and malformed scenes, then runs `tests/unit/`. `shoot.sh`
-renders a real frame through the Compatibility renderer on a software
-rasteriser inside a virtual X server — no desktop or GPU needed. Both work in
-a container, which is what makes remote sessions on this project trustworthy.
+runs the real game and captures from inside it, through the Compatibility
+renderer on a software rasteriser inside a virtual X server — no desktop or
+GPU needed, and the frame goes through the project's own stretch settings and
+camera. `INPUT=` plays movement actions through the real input pipeline before
+the shot, so behaviour that only exists in response to a keypress can still be
+checked. Both work in a container, which is what makes remote sessions on this
+project trustworthy.
 
 Set `GODOT=/path/to/godot` if the binary is not on your `PATH`.
 
@@ -49,4 +54,5 @@ follows. Point each new session at it.
 ## Progress
 
 - [x] **Stage 0** — Workshop setup
-- [ ] **Stage 1** — A character on the grid
+- [x] **Stage 1** — A character on the grid
+- [ ] **Stage 2** — Paint the home

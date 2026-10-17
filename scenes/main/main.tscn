@@ -1,6 +1,61 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/main/main.gd" id="1_main"]
+[ext_resource type="Texture2D" path="res://art/placeholder/ground.png" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Texture2D" path="res://art/placeholder/stone.png" id="4_stone"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
+
+[node name="Field" type="Sprite2D" parent="."]
+texture_repeat = 2
+texture = ExtResource("2_ground")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 640, 640)
+
+[node name="Landmarks" type="Node2D" parent="."]
+
+[node name="Stone0" type="Sprite2D" parent="Landmarks"]
+position = Vector2(264, 264)
+texture = ExtResource("4_stone")
+
+[node name="Stone1" type="Sprite2D" parent="Landmarks"]
+position = Vector2(392, 296)
+texture = ExtResource("4_stone")
+
+[node name="Stone2" type="Sprite2D" parent="Landmarks"]
+position = Vector2(312, 408)
+texture = ExtResource("4_stone")
+
+[node name="Stone3" type="Sprite2D" parent="Landmarks"]
+position = Vector2(440, 392)
+texture = ExtResource("4_stone")
+
+[node name="Stone4" type="Sprite2D" parent="Landmarks"]
+position = Vector2(232, 376)
+texture = ExtResource("4_stone")
+
+[node name="Stone5" type="Sprite2D" parent="Landmarks"]
+position = Vector2(360, 232)
+texture = ExtResource("4_stone")
+
+[node name="Stone6" type="Sprite2D" parent="Landmarks"]
+position = Vector2(472, 472)
+texture = ExtResource("4_stone")
+
+[node name="Stone7" type="Sprite2D" parent="Landmarks"]
+position = Vector2(200, 472)
+texture = ExtResource("4_stone")
+
+[node name="Stone8" type="Sprite2D" parent="Landmarks"]
+position = Vector2(504, 328)
+texture = ExtResource("4_stone")
+
+[node name="Stone9" type="Sprite2D" parent="Landmarks"]
+position = Vector2(296, 504)
+texture = ExtResource("4_stone")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+start_tile = Vector2i(20, 20)

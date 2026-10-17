@@ -1,0 +1,14 @@
+{
+  "name": "Home",
+  "note": "The locked home palette. Every realm gets its own 8 colours, and generated pieces may only use the palette of the realm they belong to. Stage 5 replaces these with exports from Firefly Graph; the keys stay the same.",
+  "colors": {
+    "ink":         "#181a26",
+    "shadow":      "#2e3350",
+    "grass_dark":  "#46613f",
+    "grass":       "#6a9455",
+    "grass_light": "#9ec46b",
+    "earth":       "#b08968",
+    "hero":        "#e0a458",
+    "light":       "#f4ecd8"
+  }
+}
