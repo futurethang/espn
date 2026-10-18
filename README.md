@@ -56,6 +56,10 @@ tools/export_web.sh    # build/web/
 tools/deploy_web.sh    # force-push it to the gh-pages branch
 ```
 
+Pushing to `master` does this automatically (`.github/workflows/deploy-web.yml`),
+after `check.sh` passes — a red build never reaches the page. The scripts above
+are for deploying without waiting for CI.
+
 The export has thread support off on purpose: a threaded Godot web build
 needs SharedArrayBuffer, which needs cross-origin isolation headers, which
 GitHub Pages cannot send. Export templates are a separate download — see the
